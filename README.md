@@ -4,7 +4,7 @@ Visualizations of Formula 1 races, 1950-2021.
 
 ## Output
 
-- [formula1.rmd](./formula1.rmd)
+- [formula1.md](./formula1.md)
 
 ## Source dataset
 
