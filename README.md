@@ -1,1 +1,3 @@
-# f1
+# Formula 1
+
+Visualizations in R.
