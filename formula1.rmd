@@ -22,6 +22,7 @@ library(tibble)
 ```{r dataset}
 
 races <- read.csv("./data/races.csv") %>% mutate(date = as.Date(date))
+lap_times_1060 <- read.csv("./data/lap_times_1060.csv")
 ```
 
 # Formula 1
@@ -30,4 +31,12 @@ races <- read.csv("./data/races.csv") %>% mutate(date = as.Date(date))
 races %>%
   ggplot(aes(x = date, y = round)) +
   geom_point()
+```
+
+```{r}
+lap_times_1060 %>%
+  mutate(driverId = factor(driverId)) %>%
+  ggplot(aes(x = lap, y = position, group = driverId, color = driverId)) +
+  geom_point(aes(color = driverId)) +
+  geom_step(aes(color = driverId))
 ```
