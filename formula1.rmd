@@ -22,6 +22,9 @@ library(tibble)
 ```{r dataset}
 
 races <- read.csv("./data/races.csv") %>% mutate(date = as.Date(date))
+standings <- read.csv("./data/driver_standings.csv")
+drivers <- read.csv("./data/drivers.csv")
+results <- read.csv("./data/results.csv")
 lap_times_1060 <- read.csv("./data/lap_times_1060.csv")
 ```
 
@@ -39,4 +42,57 @@ lap_times_1060 %>%
   ggplot(aes(x = lap, y = position, group = driverId, color = driverId)) +
   geom_point(aes(color = driverId)) +
   geom_step(aes(color = driverId))
+```
+
+```{r}
+
+last_races <- races %>%
+  group_by(year) %>%
+  mutate(last_race = max(round)) %>%
+  filter(round == last_race) %>%
+  select(raceId, round) %>%
+  arrange(year)
+
+glimpse(last_races)
+
+standings_endofseason_leader <- standings %>%
+  filter(raceId %in% last_races$raceId) %>%
+  group_by(raceId) %>%
+  filter(position == 1)
+
+tail(standings_endofseason_leader)
+
+champions <- standings_endofseason_leader %>%
+  inner_join(drivers, by = "driverId") %>%
+  inner_join(last_races, by = "raceId") %>%
+  mutate(num_rounds = round) %>%
+  select(year, firstname, lastname, code, driverId, results_wins, num_rounds) %>%
+  arrange(year) %>%
+  tail(28)
+
+head(champions)
+
+results_wins <- results %>%
+  filter(position == 1) %>%
+  inner_join(races, by = "raceId") %>%
+  group_by(year) %>%
+  select(year, raceId, round, driverId, position) %>%
+  arrange(desc(year), desc(round)) %>%
+  inner_join(champions, by = "year", suffix = c("", "_CHA")) %>%
+  mutate(championId = driverId_CHA) %>%
+  select(year, raceId, round, driverId, championId)
+# mutate(championId = raceId.y)
+# select()
+
+head(results_wins)
+results_wins
+# filter(driverId %in% champions$driverId) %>%
+
+
+ggplot(data = champions, aes(
+  x = -10, y = year
+)) +
+  geom_text(hjust = "left", mapping = aes(label = paste(firstname, lastname))) +
+  scale_y_reverse(breaks = seq(min(champions$year), max(champions$year))) +
+  geom_point(data = results_wins, aes(x = round, y = year))
 ```
