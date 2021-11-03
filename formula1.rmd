@@ -19,6 +19,16 @@ library(knitr)
 library(tibble)
 ```
 
+```{r theme}
+
+theme_set(theme_light())
+
+theme_update(
+  axis.title = element_blank(),
+  legend.position = "none"
+)
+```
+
 ```{r dataset}
 
 races <- read.csv("./data/races.csv") %>% mutate(date = as.Date(date))
@@ -28,15 +38,15 @@ results <- read.csv("./data/results.csv")
 lap_times_1060 <- read.csv("./data/lap_times_1060.csv")
 ```
 
-# Formula 1
+# Formula 1 World Champions
 
-```{r}
+```{r, eval=FALSE}
 races %>%
   ggplot(aes(x = date, y = round)) +
   geom_point()
 ```
 
-```{r}
+```{r, eval=FALSE}
 lap_times_1060 %>%
   mutate(driverId = factor(driverId)) %>%
   ggplot(aes(x = lap, y = position, group = driverId, color = driverId)) +
@@ -53,24 +63,18 @@ last_races <- races %>%
   select(raceId, round) %>%
   arrange(year)
 
-glimpse(last_races)
-
 standings_endofseason_leader <- standings %>%
   filter(raceId %in% last_races$raceId) %>%
   group_by(raceId) %>%
   filter(position == 1)
 
-tail(standings_endofseason_leader)
-
 champions <- standings_endofseason_leader %>%
   inner_join(drivers, by = "driverId") %>%
   inner_join(last_races, by = "raceId") %>%
   mutate(num_rounds = round) %>%
-  select(year, firstname, lastname, code, driverId, results_wins, num_rounds) %>%
-  arrange(year) %>%
-  tail(28)
+  select(year, driverId, num_rounds, firstname, lastname) %>%
+  arrange(year)
 
-head(champions)
 
 results_wins <- results %>%
   filter(position == 1) %>%
@@ -80,19 +84,30 @@ results_wins <- results %>%
   arrange(desc(year), desc(round)) %>%
   inner_join(champions, by = "year", suffix = c("", "_CHA")) %>%
   mutate(championId = driverId_CHA) %>%
-  select(year, raceId, round, driverId, championId)
-# mutate(championId = raceId.y)
-# select()
+  select(year, raceId, round, driverId, championId) %>%
+  mutate(is_same = driverId == championId)
 
-head(results_wins)
-results_wins
-# filter(driverId %in% champions$driverId) %>%
+win_count <- results_wins %>%
+  filter(is_same) %>%
+  group_by(year) %>%
+  tally()
+```
 
+```{r}
 
 ggplot(data = champions, aes(
-  x = -10, y = year
+  x = -12, y = year
 )) +
   geom_text(hjust = "left", mapping = aes(label = paste(firstname, lastname))) +
   scale_y_reverse(breaks = seq(min(champions$year), max(champions$year))) +
-  geom_point(data = results_wins, aes(x = round, y = year))
+  geom_point(
+    data = results_wins,
+    aes(x = round, y = year, fill = is_same),
+    shape = 21,
+  ) +
+  scale_fill_manual(values = c("white", "black")) +
+  geom_text(
+    data = win_count,
+    aes(y = year, x = 24, label = n), hjust = "right",
+  )
 ```

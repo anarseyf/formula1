@@ -1,6 +1,4 @@
 
-# Formula 1
+# Formula 1 World Champions
 
-![](formula1_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
-
-![](formula1_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+![](formula1_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
