@@ -93,7 +93,7 @@ win_count <- results_wins %>%
   tally()
 ```
 
-```{r}
+```{r, fig.height=12}
 
 ggplot(data = champions, aes(
   x = -12, y = year
