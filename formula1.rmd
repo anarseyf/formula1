@@ -102,7 +102,7 @@ ggplot(data = champions, aes(
   scale_y_reverse(breaks = seq(min(champions$year), max(champions$year))) +
   geom_point(
     data = results_wins,
-    aes(x = round, y = year, fill = is_same),
+    aes(x = round * 0.75, y = year, fill = is_same),
     shape = 21,
   ) +
   scale_fill_manual(values = c("white", "black")) +
@@ -111,3 +111,7 @@ ggplot(data = champions, aes(
     aes(y = year, x = 24, label = n), hjust = "right",
   )
 ```
+
+## Credit
+
+Inspired by https://github.com/gkaramanis/tidytuesday.
