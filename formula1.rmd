@@ -34,6 +34,7 @@ theme_update(
 races <- read.csv("./data/races.csv") %>% mutate(date = as.Date(date))
 standings <- read.csv("./data/driver_standings.csv")
 drivers <- read.csv("./data/drivers.csv")
+circuits <- read.csv("./data/circuits.csv")
 results <- read.csv("./data/results.csv")
 lap_times_1060 <- read.csv("./data/lap_times_1060.csv")
 ```
@@ -60,58 +61,106 @@ last_races <- races %>%
   group_by(year) %>%
   mutate(last_race = max(round)) %>%
   filter(round == last_race) %>%
-  select(raceId, round) %>%
+  select(year, raceId, round) %>%
   arrange(year)
 
-standings_endofseason_leader <- standings %>%
+standings_endofseason_leaders <- standings %>%
   filter(raceId %in% last_races$raceId) %>%
   group_by(raceId) %>%
-  filter(position == 1)
+  filter(position == 1 | position == 2) %>%
+  select(raceId, driverId, points, position, wins) %>%
+  arrange(raceId, position)
 
-champions <- standings_endofseason_leader %>%
+standings_endofseason_leaders
+
+rivals <- standings_endofseason_leaders %>%
+  # filter(position == 1) %>%
   inner_join(drivers, by = "driverId") %>%
   inner_join(last_races, by = "raceId") %>%
   mutate(num_rounds = round) %>%
-  select(year, driverId, num_rounds, firstname, lastname) %>%
-  arrange(year)
+  select(year, driverId, num_rounds, position) %>%
+  mutate(position = ifelse(position == 1, "championId", "runnerupId")) %>%
+  spread(position, driverId) %>%
+  arrange(desc(year))
 
+rivals
 
 results_wins <- results %>%
   filter(position == 1) %>%
   inner_join(races, by = "raceId") %>%
   group_by(year) %>%
   select(year, raceId, round, driverId, position) %>%
+  inner_join(rivals, by = "year", suffix = c("", "_CHA")) %>%
   arrange(desc(year), desc(round)) %>%
-  inner_join(champions, by = "year", suffix = c("", "_CHA")) %>%
-  mutate(championId = driverId_CHA) %>%
-  select(year, raceId, round, driverId, championId) %>%
-  mutate(is_same = driverId == championId)
+  select(year, raceId, round, num_rounds, driverId, championId, runnerupId) %>%
+  mutate(
+    won_by =
+      ifelse(driverId == championId, "champion",
+        ifelse(driverId == runnerupId, "runnerup", "other")
+      )
+  ) %>%
+  filter(year > 2010)
+
+results_wins
 
 win_count <- results_wins %>%
-  filter(is_same) %>%
+  filter(won_by == "champion") %>%
   group_by(year) %>%
-  tally()
+  tally() %>%
+  arrange(desc(year))
+
+win_count
+
+champion_names <- rivals %>%
+  inner_join(drivers, by = c("championId" = "driverId")) %>%
+  select(year, firstname, lastname) %>%
+  head(10)
+
+champion_names
+
+runnerup_names <- rivals %>%
+  inner_join(drivers, by = c("runnerupId" = "driverId")) %>%
+  select(year, firstname, lastname) %>%
+  head(10)
+
+runnerup_names
 ```
 
 ```{r, fig.height=12}
 
-ggplot(data = champions, aes(
+min_year <- min(champion_names$year)
+max_year <- max(champion_names$year)
+champion_color <- "#cf1616"
+runnerup_color <- "#0e2461"
+
+ggplot(data = champion_names, aes(
   x = -12, y = year
 )) +
-  geom_text(hjust = "left", mapping = aes(label = paste(firstname, lastname))) +
-  scale_y_reverse(breaks = seq(min(champions$year), max(champions$year))) +
+  geom_text(hjust = "left", mapping = aes(label = paste(firstname, lastname)), color = champion_color) +
+  geom_text(data = runnerup_names, hjust = "left", mapping = aes(y = year + 0.25, label = paste(firstname, lastname)), color = runnerup_color) +
+  scale_y_reverse(breaks = seq(min_year, max_year)) +
   geom_point(
     data = results_wins,
-    aes(x = round * 0.75, y = year, fill = is_same),
+    aes(x = round * 0.75, y = year, fill = won_by),
     shape = 21,
+    size = 4
   ) +
-  scale_fill_manual(values = c("white", "black")) +
-  geom_text(
-    data = win_count,
-    aes(y = year, x = 24, label = n), hjust = "right",
-  )
+  scale_fill_manual(values = c("champion" = champion_color, "runnerup" = runnerup_color, "other" = "white"))
+# geom_text(
+#   data = win_count,
+#   aes(y = year, x = 24, label = n), hjust = "right",
+# )
+```
+
+```{r}
+races %>%
+  group_by(circuitId) %>%
+  tally() %>%
+  inner_join(circuits, by = "circuitId") %>%
+  select(n, circuitRef, location, country) %>%
+  arrange(desc(n))
 ```
 
 ## Credit
 
-Inspired by https://github.com/gkaramanis/tidytuesday.
+Inspired by https://github.com/gkaramanis/tidytuesday/tree/master/2020/2020-week15.

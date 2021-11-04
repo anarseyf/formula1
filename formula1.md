@@ -5,4 +5,5 @@
 
 ## Credit
 
-Inspired by <https://github.com/gkaramanis/tidytuesday>.
+Inspired by
+\[@gkaramanis/tidytuesday\](<https://github.com/gkaramanis/tidytuesday/tree/master/2020/2020-week15>).
