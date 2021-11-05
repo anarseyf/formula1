@@ -34,6 +34,7 @@ theme_update(
 races <- read.csv("./data/races.csv") %>% mutate(date = as.Date(date))
 standings <- read.csv("./data/driver_standings.csv")
 drivers <- read.csv("./data/drivers.csv")
+constructors <- read.csv("./data/constructors.csv")
 circuits <- read.csv("./data/circuits.csv")
 results <- read.csv("./data/results.csv")
 lap_times_1060 <- read.csv("./data/lap_times_1060.csv")
@@ -73,8 +74,6 @@ constructor_mapping <- results %>%
   select(year, driverId, constructorId) %>%
   arrange(desc(year))
 
-head(constructor_mapping)
-
 standings_endofseason_leaders <- standings %>%
   filter(raceId %in% last_races$raceId) %>%
   inner_join(races %>% select(raceId, year), by = "raceId") %>%
@@ -87,25 +86,17 @@ dupl <- duplicated(standings_endofseason_leaders)
 championship_rivals <- standings_endofseason_leaders[!dupl, ] %>%
   select(year, driverId, constructorId, position, points, wins)
 
-head(championship_rivals)
-
-# arrange(raceId, position)
-
 champions <- championship_rivals %>%
   filter(position == 1) %>%
   mutate(championId = driverId) %>%
   select(year, championId) %>%
   arrange(desc(year))
 
-head(champions)
-
 runners_up <- championship_rivals %>%
   filter(position == 2) %>%
   mutate(runnerupId = driverId) %>%
   select(year, runnerupId) %>%
   arrange(desc(year))
-
-head(runners_up)
 
 results_wins <- results %>%
   filter(position == 1) %>%
@@ -115,30 +106,33 @@ results_wins <- results %>%
   inner_join(champions, by = "year") %>%
   inner_join(runners_up, by = "year") %>%
   arrange(desc(year), desc(round)) %>%
-  select(year, raceId, round, num_rounds, driverId, championId, runnerupId) %>%
   mutate(
     won_by =
       ifelse(driverId == championId, "champion",
         ifelse(driverId == runnerupId, "runnerup", "other")
       )
   ) %>%
-  filter(year > 2010)
+  filter(year > 2000)
 
-results_wins
-
-champion_names <- runners_up %>%
+champion_names <- champions %>%
   inner_join(drivers, by = c("championId" = "driverId")) %>%
   select(year, firstname, lastname) %>%
-  head(10)
-
-champion_names
+  filter(year > 2000)
 
 runnerup_names <- runners_up %>%
   inner_join(drivers, by = c("runnerupId" = "driverId")) %>%
   select(year, firstname, lastname) %>%
-  head(10)
+  filter(year > 2000)
 
-runnerup_names
+champion_constructors <- champions %>%
+  inner_join(constructor_mapping, by = c("year", "championId" = "driverId")) %>%
+  inner_join(constructors %>% select(constructorId, name), by = "constructorId") %>%
+  filter(year > 2000)
+
+runnerup_constructors <- runners_up %>%
+  inner_join(constructor_mapping, by = c("year", "runnerupId" = "driverId")) %>%
+  inner_join(constructors %>% select(constructorId, name), by = "constructorId") %>%
+  filter(year > 2000)
 ```
 
 ```{r, fig.height=12}
@@ -163,6 +157,20 @@ ggplot(data = champion_names, aes(
     hjust = "left",
     # color = runnerup_color
   ) +
+  geom_text(
+    data = champion_constructors,
+    mapping = aes(x = -12, y = year + 0.25, label = name),
+    hjust = "left",
+    fontface = "italic"
+    # color = runnerup_color
+  ) +
+  geom_text(
+    data = runnerup_constructors,
+    mapping = aes(x = 25, y = year + 0.25, label = name),
+    hjust = "left",
+    fontface = "italic"
+    # color = runnerup_color
+  ) +
   scale_y_reverse(breaks = seq(min_year, max_year)) +
   geom_point(
     data = results_wins,
@@ -176,7 +184,7 @@ ggplot(data = champion_names, aes(
   )
 ```
 
-```{r}
+```{r, eval=FALSE}
 races %>%
   group_by(circuitId) %>%
   tally() %>%
