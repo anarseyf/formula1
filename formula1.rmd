@@ -58,29 +58,47 @@ lap_times_1060 %>%
 ```{r}
 
 last_races <- races %>%
+  filter(year < 2021) %>% # 2021 season is incomplete as of today
   group_by(year) %>%
   mutate(last_race = max(round)) %>%
   filter(round == last_race) %>%
   select(year, raceId, round) %>%
   arrange(year)
 
+constructor_mapping <- standings %>%
+  filter(raceId %in% last_races$raceId) %>%
+  inner_join(results, by = c("raceId", "driverId")) %>%
+  select(raceId, driverId, constructorId)
+
+
 standings_endofseason_leaders <- standings %>%
   filter(raceId %in% last_races$raceId) %>%
-  group_by(raceId) %>%
+  inner_join(races, by = "raceId") %>%
+  select(year, raceId, driverId, points, position) %>%
+  group_by(year) %>%
   filter(position == 1 | position == 2) %>%
-  select(raceId, driverId, points, position, wins) %>%
-  arrange(raceId, position)
+  arrange(year, position) %>%
+  left_join(constructor_mapping, by = c("raceId", "driverId")) %>%
+  select(year, driverId, constructorId, points, position)
+
+dupl <- duplicated(standings_endofseason_leaders)
+standings_endofseason_leaders[!dupl, ]
+
+
+# arrange(raceId, position)
 
 standings_endofseason_leaders
 
 rivals <- standings_endofseason_leaders %>%
-  # filter(position == 1) %>%
-  inner_join(drivers, by = "driverId") %>%
+  # inner_join(drivers, by = "driverId") %>%
   inner_join(last_races, by = "raceId") %>%
   mutate(num_rounds = round) %>%
-  select(year, driverId, num_rounds, position) %>%
-  mutate(position = ifelse(position == 1, "championId", "runnerupId")) %>%
-  spread(position, driverId) %>%
+  select(year, driverId, constructorId, num_rounds, position) %>%
+  mutate(position = ifelse(position == 1, "championId", "runnerupId"))
+
+rivals
+
+spread(position, driverId) %>%
   arrange(desc(year))
 
 rivals
@@ -136,16 +154,29 @@ runnerup_color <- "#0e2461"
 ggplot(data = champion_names, aes(
   x = -12, y = year
 )) +
-  geom_text(hjust = "left", mapping = aes(label = paste(firstname, lastname)), color = champion_color) +
-  geom_text(data = runnerup_names, hjust = "left", mapping = aes(y = year + 0.25, label = paste(firstname, lastname)), color = runnerup_color) +
+  geom_text(
+    hjust = "left",
+    mapping = aes(label = paste(firstname, lastname)),
+    fontface = "bold"
+    # color = champion_color
+  ) +
+  geom_text(
+    data = runnerup_names,
+    mapping = aes(x = 25, y = year, label = paste(firstname, lastname)),
+    hjust = "left",
+    # color = runnerup_color
+  ) +
   scale_y_reverse(breaks = seq(min_year, max_year)) +
   geom_point(
     data = results_wins,
-    aes(x = round * 0.75, y = year, fill = won_by),
-    shape = 21,
-    size = 4
+    aes(x = round, y = year, fill = won_by, shape = won_by),
+    size = 3
   ) +
-  scale_fill_manual(values = c("champion" = champion_color, "runnerup" = runnerup_color, "other" = "white"))
+  scale_shape_manual(values = c("champion" = 19, "runnerup" = 13, "other" = 21)) +
+  scale_fill_manual(
+    values =
+      c("champion" = champion_color, "runnerup" = runnerup_color, "other" = "white")
+  )
 # geom_text(
 #   data = win_count,
 #   aes(y = year, x = 24, label = n), hjust = "right",
