@@ -65,11 +65,15 @@ last_races <- races %>%
   select(year, raceId, round) %>%
   arrange(year)
 
-constructor_mapping <- standings %>%
-  filter(raceId %in% last_races$raceId) %>%
-  inner_join(results, by = c("raceId", "driverId")) %>%
-  select(raceId, driverId, constructorId)
+constructor_mapping <- results %>%
+  select(raceId, driverId, constructorId) %>%
+  inner_join(races %>% select(raceId, year, round), by = "raceId") %>%
+  group_by(year, driverId) %>%
+  filter(round == max(round)) %>%
+  select(year, driverId, constructorId) %>%
+  arrange(desc(year))
 
+head(constructor_mapping)
 
 standings_endofseason_leaders <- standings %>%
   filter(raceId %in% last_races$raceId) %>%
@@ -79,7 +83,10 @@ standings_endofseason_leaders <- standings %>%
   filter(position == 1 | position == 2) %>%
   arrange(year, position) %>%
   left_join(constructor_mapping, by = c("raceId", "driverId")) %>%
-  select(year, driverId, constructorId, points, position)
+  select(year, driverId, constructorId, points, position) %>%
+  filter(is.na(constructorId))
+
+standings_endofseason_leaders
 
 dupl <- duplicated(standings_endofseason_leaders)
 standings_endofseason_leaders[!dupl, ]
