@@ -6,7 +6,7 @@ output: rmarkdown::github_document
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 packages <- c(
-  "tidyr", "knitr", "ggplot2", "tibble"
+  "tidyr", "knitr", "ggplot2", "tibble", "ggtheme"
 )
 install.packages(setdiff(packages, rownames(installed.packages())),
   repos = "http://cran.us.r-project.org"
@@ -21,7 +21,7 @@ library(tibble)
 
 ```{r theme}
 
-theme_set(theme_light())
+theme_set(theme_minimal())
 
 theme_update(
   axis.title = element_blank(),
@@ -37,6 +37,7 @@ drivers <- read.csv("./data/drivers.csv")
 constructors <- read.csv("./data/constructors.csv")
 circuits <- read.csv("./data/circuits.csv")
 results <- read.csv("./data/results.csv")
+qualifying <- read.csv("./data/qualifying.csv")
 lap_times_1060 <- read.csv("./data/lap_times_1060.csv")
 ```
 
@@ -57,6 +58,10 @@ lap_times_1060 %>%
 ```
 
 ```{r}
+
+filter_by_year <- function(data) {
+  data %>% filter(year > 2000)
+}
 
 last_races <- races %>%
   filter(year < 2021) %>% # 2021 season is incomplete as of today
@@ -98,7 +103,7 @@ runners_up <- championship_rivals %>%
   select(year, runnerupId) %>%
   arrange(desc(year))
 
-results_wins <- results %>%
+race_by_race <- results %>%
   filter(position == 1) %>%
   select(raceId, driverId) %>%
   inner_join(races %>% select(year, round, raceId), by = "raceId") %>%
@@ -112,30 +117,45 @@ results_wins <- results %>%
         ifelse(driverId == runnerupId, "runnerup", "other")
       )
   ) %>%
-  filter(year > 2000)
+  filter_by_year()
+
+pole_sitters <- qualifying %>%
+  filter(position == 1) %>%
+  mutate(polesitterId = driverId) %>%
+  select(raceId, polesitterId)
+
+s2001 <- race_by_race %>%
+  filter(year == 2001) %>%
+  select(raceId)
+
+pole_sitters %>%
+  filter(raceId %in% s2001$raceId)
+
+# results_wins <- results_wins %>%
+#   inner_join(pole_sitters, by = "raceId")
 
 champion_names <- champions %>%
   inner_join(drivers, by = c("championId" = "driverId")) %>%
   select(year, firstname, lastname) %>%
-  filter(year > 2000)
+  filter_by_year()
 
 runnerup_names <- runners_up %>%
   inner_join(drivers, by = c("runnerupId" = "driverId")) %>%
   select(year, firstname, lastname) %>%
-  filter(year > 2000)
+  filter_by_year()
 
 champion_constructors <- champions %>%
   inner_join(constructor_mapping, by = c("year", "championId" = "driverId")) %>%
   inner_join(constructors %>% select(constructorId, name), by = "constructorId") %>%
-  filter(year > 2000)
+  filter_by_year()
 
 runnerup_constructors <- runners_up %>%
   inner_join(constructor_mapping, by = c("year", "runnerupId" = "driverId")) %>%
   inner_join(constructors %>% select(constructorId, name), by = "constructorId") %>%
-  filter(year > 2000)
+  filter_by_year()
 ```
 
-```{r, fig.width=12, fig.height=12}
+```{r, fig.width=10, fig.height=8}
 
 min_year <- min(champion_names$year)
 max_year <- max(champion_names$year)
@@ -162,21 +182,21 @@ ggplot() +
   ) +
   geom_text(
     data = champion_constructors,
-    mapping = aes(x = offset_left, y = year + 0.25, label = name),
+    mapping = aes(x = offset_left, y = year + 0.4, label = name),
     hjust = "left",
     fontface = "italic"
     # color = runnerup_color
   ) +
   geom_text(
     data = runnerup_constructors,
-    mapping = aes(x = offset_right, y = year + 0.25, label = name),
+    mapping = aes(x = offset_right, y = year + 0.4, label = name),
     hjust = "left",
     fontface = "italic"
     # color = runnerup_color
   ) +
   scale_y_reverse(breaks = seq(min_year, max_year)) +
   geom_point(
-    data = results_wins,
+    data = race_by_race,
     aes(x = round + offset_middle, y = year, fill = won_by, shape = won_by),
     size = 3
   ) +
@@ -189,6 +209,13 @@ ggplot() +
       c("champion" = champion_color, "runnerup" = runnerup_color, "other" = "white")
   ) +
   scale_x_continuous(expand = c(0, 10))
+# geom_point(
+#   data = subset(results_wins, polesitterId == championId),
+#   aes(x = round + offset_middle, y = year),
+#   fill = NA,
+#   shape = 21,
+#   size = 5
+# )
 ```
 
 ```{r, eval=FALSE}
