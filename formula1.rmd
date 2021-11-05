@@ -135,38 +135,41 @@ runnerup_constructors <- runners_up %>%
   filter(year > 2000)
 ```
 
-```{r, fig.height=12}
+```{r, fig.width=12, fig.height=12}
 
 min_year <- min(champion_names$year)
 max_year <- max(champion_names$year)
 champion_color <- "#cf1616"
 runnerup_color <- "#0e2461"
 
-ggplot(data = champion_names, aes(
-  x = -12, y = year
-)) +
+offset_left <- -25
+offset_middle <- -10
+offset_right <- 15
+
+ggplot() +
   geom_text(
+    data = champion_names,
     hjust = "left",
-    mapping = aes(label = paste(firstname, lastname)),
+    mapping = aes(x = offset_left, y = year, label = paste(firstname, lastname)),
     fontface = "bold"
     # color = champion_color
   ) +
   geom_text(
     data = runnerup_names,
-    mapping = aes(x = 25, y = year, label = paste(firstname, lastname)),
+    mapping = aes(x = offset_right, y = year, label = paste(firstname, lastname)),
     hjust = "left",
     # color = runnerup_color
   ) +
   geom_text(
     data = champion_constructors,
-    mapping = aes(x = -12, y = year + 0.25, label = name),
+    mapping = aes(x = offset_left, y = year + 0.25, label = name),
     hjust = "left",
     fontface = "italic"
     # color = runnerup_color
   ) +
   geom_text(
     data = runnerup_constructors,
-    mapping = aes(x = 25, y = year + 0.25, label = name),
+    mapping = aes(x = offset_right, y = year + 0.25, label = name),
     hjust = "left",
     fontface = "italic"
     # color = runnerup_color
@@ -174,14 +177,18 @@ ggplot(data = champion_names, aes(
   scale_y_reverse(breaks = seq(min_year, max_year)) +
   geom_point(
     data = results_wins,
-    aes(x = round, y = year, fill = won_by, shape = won_by),
+    aes(x = round + offset_middle, y = year, fill = won_by, shape = won_by),
     size = 3
   ) +
-  scale_shape_manual(values = c("champion" = 19, "runnerup" = 13, "other" = 21)) +
+  scale_shape_manual(
+    values =
+      c("champion" = 19, "runnerup" = 13, "other" = 21)
+  ) +
   scale_fill_manual(
     values =
       c("champion" = champion_color, "runnerup" = runnerup_color, "other" = "white")
-  )
+  ) +
+  scale_x_continuous(expand = c(0, 10))
 ```
 
 ```{r, eval=FALSE}
