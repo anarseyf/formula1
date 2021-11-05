@@ -77,45 +77,43 @@ head(constructor_mapping)
 
 standings_endofseason_leaders <- standings %>%
   filter(raceId %in% last_races$raceId) %>%
-  inner_join(races, by = "raceId") %>%
-  select(year, raceId, driverId, points, position) %>%
-  group_by(year) %>%
+  inner_join(races %>% select(raceId, year), by = "raceId") %>%
   filter(position == 1 | position == 2) %>%
-  arrange(year, position) %>%
-  left_join(constructor_mapping, by = c("raceId", "driverId")) %>%
-  select(year, driverId, constructorId, points, position) %>%
-  filter(is.na(constructorId))
-
-standings_endofseason_leaders
+  select(year, driverId, points, position, wins) %>%
+  inner_join(constructor_mapping, by = c("year", "driverId")) %>%
+  arrange(year, position)
 
 dupl <- duplicated(standings_endofseason_leaders)
-standings_endofseason_leaders[!dupl, ]
+championship_rivals <- standings_endofseason_leaders[!dupl, ] %>%
+  select(year, driverId, constructorId, position, points, wins)
 
+head(championship_rivals)
 
 # arrange(raceId, position)
 
-standings_endofseason_leaders
-
-rivals <- standings_endofseason_leaders %>%
-  # inner_join(drivers, by = "driverId") %>%
-  inner_join(last_races, by = "raceId") %>%
-  mutate(num_rounds = round) %>%
-  select(year, driverId, constructorId, num_rounds, position) %>%
-  mutate(position = ifelse(position == 1, "championId", "runnerupId"))
-
-rivals
-
-spread(position, driverId) %>%
+champions <- championship_rivals %>%
+  filter(position == 1) %>%
+  mutate(championId = driverId) %>%
+  select(year, championId) %>%
   arrange(desc(year))
 
-rivals
+head(champions)
+
+runners_up <- championship_rivals %>%
+  filter(position == 2) %>%
+  mutate(runnerupId = driverId) %>%
+  select(year, runnerupId) %>%
+  arrange(desc(year))
+
+head(runners_up)
 
 results_wins <- results %>%
   filter(position == 1) %>%
-  inner_join(races, by = "raceId") %>%
-  group_by(year) %>%
-  select(year, raceId, round, driverId, position) %>%
-  inner_join(rivals, by = "year", suffix = c("", "_CHA")) %>%
+  select(raceId, driverId) %>%
+  inner_join(races %>% select(year, round, raceId), by = "raceId") %>%
+  select(year, round, raceId, driverId) %>%
+  inner_join(champions, by = "year") %>%
+  inner_join(runners_up, by = "year") %>%
   arrange(desc(year), desc(round)) %>%
   select(year, raceId, round, num_rounds, driverId, championId, runnerupId) %>%
   mutate(
@@ -128,22 +126,14 @@ results_wins <- results %>%
 
 results_wins
 
-win_count <- results_wins %>%
-  filter(won_by == "champion") %>%
-  group_by(year) %>%
-  tally() %>%
-  arrange(desc(year))
-
-win_count
-
-champion_names <- rivals %>%
+champion_names <- runners_up %>%
   inner_join(drivers, by = c("championId" = "driverId")) %>%
   select(year, firstname, lastname) %>%
   head(10)
 
 champion_names
 
-runnerup_names <- rivals %>%
+runnerup_names <- runners_up %>%
   inner_join(drivers, by = c("runnerupId" = "driverId")) %>%
   select(year, firstname, lastname) %>%
   head(10)
@@ -184,10 +174,6 @@ ggplot(data = champion_names, aes(
     values =
       c("champion" = champion_color, "runnerup" = runnerup_color, "other" = "white")
   )
-# geom_text(
-#   data = win_count,
-#   aes(y = year, x = 24, label = n), hjust = "right",
-# )
 ```
 
 ```{r}
