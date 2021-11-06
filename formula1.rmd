@@ -119,17 +119,28 @@ race_by_race <- results %>%
   ) %>%
   filter_by_year()
 
-pole_sitters <- qualifying %>%
-  filter(position == 1) %>%
+pole_sitters <- results %>%
+  filter(grid == 1) %>%
   mutate(polesitterId = driverId) %>%
   select(raceId, polesitterId)
 
-s2001 <- race_by_race %>%
-  filter(year == 2001) %>%
-  select(raceId)
+d <- pole_sitters %>%
+  select(raceId) %>%
+  duplicated()
+pole_sitters[d, ] %>% arrange(raceId)
 
-pole_sitters %>%
-  filter(raceId %in% s2001$raceId)
+# results %>%
+#   filter(grid == 1) %>%
+#   select(raceId) %>%
+#   inner_join(races %>% select(raceId, year)) %>%
+#   group_by(year) %>%
+#   tally() %>%
+#   right_join(last_races) %>%
+#   mutate(missing = round - n) %>%
+#   select(year, round, missing) %>%
+#   arrange(year) %>%
+#   print(n=Inf) # '51-57 and '64 have duplicates? TODO
+
 
 # results_wins <- results_wins %>%
 #   inner_join(pole_sitters, by = "raceId")
@@ -226,6 +237,32 @@ races %>%
   select(n, circuitRef, location, country) %>%
   arrange(desc(n))
 ```
+
+## Data notes
+
+### Multiple P1 entries for some races
+
+These races have more than one entry in `results.csv` for pole-sitter (`grid = 1`):
+
+```
+   raceId polesitterId
+1     717          374
+2     717          373
+3     780          479
+4     785          608
+5     791          608
+6     792          642
+7     792          427
+8     814          633
+9     815          697
+10    824          475
+11    828          786
+```
+
+The reasons are kind of wild. See for example:
+
+* Race ID 792: https://en.wikipedia.org/wiki/1955_Argentine_Grand_Prix
+* Race ID 717: https://en.wikipedia.org/wiki/1964_United_States_Grand_Prix
 
 ## Credit
 
