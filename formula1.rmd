@@ -149,8 +149,23 @@ race_by_race <- results %>%
 
 champion_names <- champions %>%
   inner_join(drivers, by = c("championId" = "driverId")) %>%
-  select(year, firstname, lastname) %>%
+  select(year, championId, firstname, lastname) %>%
   filter_by_year()
+
+champion_counts <- champion_names %>%
+  group_by(championId) %>%
+  summarise(count = n())
+
+champion_table <- champion_names %>%
+  inner_join(champion_counts) %>%
+  arrange(year) %>%
+  filter_by_year()
+
+dupl_index <- champion_table %>%
+  select(championId) %>%
+  duplicated()
+
+champion_table <- champion_table[!dupl_index, ]
 
 runnerup_names <- runners_up %>%
   inner_join(drivers, by = c("runnerupId" = "driverId")) %>%
@@ -229,6 +244,11 @@ ggplot() +
     shape = 21,
     size = 5,
     stroke = 1
+  ) +
+  geom_label(
+    data = champion_table,
+    aes(x = -27, y = year, label = count),
+    size = 5
   )
 ```
 
