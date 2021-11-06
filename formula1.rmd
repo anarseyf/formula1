@@ -60,7 +60,8 @@ lap_times_1060 %>%
 ```{r}
 
 filter_by_year <- function(data) {
-  data %>% filter(year > 2000)
+  # data %>% filter(year > 2000)
+  data %>% filter(year > 1949)
 }
 
 last_races <- races %>%
@@ -181,18 +182,27 @@ runnerup_constructors <- runners_up %>%
   inner_join(constructor_mapping, by = c("year", "runnerupId" = "driverId")) %>%
   inner_join(constructors %>% select(constructorId, name), by = "constructorId") %>%
   filter_by_year()
+
+stats_table <- race_by_race %>%
+  group_by(year) %>%
+  summarize(
+    champion_wins = sum(driverId == championId),
+    champion_poles = sum(polesitterId == championId),
+    runnerup_wins = sum(driverId == runnerupId),
+    runnerup_poles = sum(polesitterId == runnerupId)
+  )
 ```
 
-```{r, fig.width=10, fig.height=8}
+```{r main, fig.width=12, fig.height=24}
 
 min_year <- min(champion_names$year)
 max_year <- max(champion_names$year)
 champion_color <- "#cf1616"
 runnerup_color <- "#0e2461"
 
-offset_left <- -25
+offset_left <- -40
 offset_middle <- -10
-offset_right <- 15
+offset_right <- 30
 
 ggplot() +
   geom_text(
@@ -222,7 +232,6 @@ ggplot() +
     fontface = "italic"
     # color = runnerup_color
   ) +
-  scale_y_reverse(breaks = seq(min_year, max_year)) +
   geom_point(
     data = race_by_race,
     aes(x = round + offset_middle, y = year, fill = won_by, shape = won_by),
@@ -236,7 +245,8 @@ ggplot() +
     values =
       c("champion" = champion_color, "runnerup" = runnerup_color, "other" = "white")
   ) +
-  scale_x_continuous(expand = c(0, 10)) +
+  scale_y_reverse(breaks = seq(min_year, max_year), expand = c(0, 0)) +
+  # scale_x_continuous(expand = c(0, 10)) +
   geom_point(
     data = subset(race_by_race, polesitterId == championId),
     aes(x = round + offset_middle, y = year),
@@ -247,8 +257,34 @@ ggplot() +
   ) +
   geom_label(
     data = champion_table,
-    aes(x = -27, y = year, label = count),
+    aes(x = offset_left - 5, y = year, label = count),
     size = 5
+  ) +
+  geom_text(
+    data = stats_table,
+    mapping = aes(x = offset_middle - 10, y = year, label = champion_wins),
+    hjust = "left"
+  ) +
+  geom_text(
+    data = stats_table,
+    mapping = aes(
+      x = offset_middle - 5, y = year,
+      label = sprintf("(%d)", champion_poles)
+    ),
+    hjust = "left"
+  ) +
+  geom_text(
+    data = stats_table,
+    mapping = aes(x = offset_right - 15, y = year, label = runnerup_wins),
+    hjust = "left"
+  ) +
+  geom_text(
+    data = stats_table,
+    mapping = aes(
+      x = offset_right - 10, y = year,
+      label = sprintf("(%d)", runnerup_poles)
+    ),
+    hjust = "left"
   )
 ```
 
