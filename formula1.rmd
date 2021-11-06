@@ -103,6 +103,19 @@ runners_up <- championship_rivals %>%
   select(year, runnerupId) %>%
   arrange(desc(year))
 
+
+pole_sitters <- results %>%
+  filter(grid == 1) %>%
+  mutate(polesitterId = driverId) %>%
+  select(raceId, polesitterId) %>%
+  arrange(raceId)
+
+dupl_index <- pole_sitters %>%
+  select(raceId) %>%
+  duplicated()
+
+pole_sitters <- pole_sitters[!dupl_index, ]
+
 race_by_race <- results %>%
   filter(position == 1) %>%
   select(raceId, driverId) %>%
@@ -117,17 +130,9 @@ race_by_race <- results %>%
         ifelse(driverId == runnerupId, "runnerup", "other")
       )
   ) %>%
+  left_join(pole_sitters) %>%
   filter_by_year()
 
-pole_sitters <- results %>%
-  filter(grid == 1) %>%
-  mutate(polesitterId = driverId) %>%
-  select(raceId, polesitterId)
-
-d <- pole_sitters %>%
-  select(raceId) %>%
-  duplicated()
-pole_sitters[d, ] %>% arrange(raceId)
 
 # results %>%
 #   filter(grid == 1) %>%
@@ -141,9 +146,6 @@ pole_sitters[d, ] %>% arrange(raceId)
 #   arrange(year) %>%
 #   print(n=Inf) # '51-57 and '64 have duplicates? TODO
 
-
-# results_wins <- results_wins %>%
-#   inner_join(pole_sitters, by = "raceId")
 
 champion_names <- champions %>%
   inner_join(drivers, by = c("championId" = "driverId")) %>%
@@ -219,14 +221,15 @@ ggplot() +
     values =
       c("champion" = champion_color, "runnerup" = runnerup_color, "other" = "white")
   ) +
-  scale_x_continuous(expand = c(0, 10))
-# geom_point(
-#   data = subset(results_wins, polesitterId == championId),
-#   aes(x = round + offset_middle, y = year),
-#   fill = NA,
-#   shape = 21,
-#   size = 5
-# )
+  scale_x_continuous(expand = c(0, 10)) +
+  geom_point(
+    data = subset(race_by_race, polesitterId == championId),
+    aes(x = round + offset_middle, y = year),
+    fill = NA,
+    shape = 21,
+    size = 5,
+    stroke = 1
+  )
 ```
 
 ```{r, eval=FALSE}
@@ -263,6 +266,10 @@ The reasons are kind of wild. See for example:
 
 * Race ID 792: https://en.wikipedia.org/wiki/1955_Argentine_Grand_Prix
 * Race ID 717: https://en.wikipedia.org/wiki/1964_United_States_Grand_Prix
+
+### Pole position based on starting grid
+
+The dataset does not contain qualy times for over half of all the 1000+ races. I am using starting grid position P1 instead.
 
 ## Credit
 
