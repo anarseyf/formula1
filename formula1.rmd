@@ -6,7 +6,7 @@ output: rmarkdown::github_document
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 packages <- c(
-  "tidyr", "knitr", "ggplot2", "tibble", "ggtheme"
+  "tidyr", "knitr", "ggplot2", "tibble", "ggthemes", "extrafont", "fontcm"
 )
 install.packages(setdiff(packages, rownames(installed.packages())),
   repos = "http://cran.us.r-project.org"
@@ -17,6 +17,12 @@ library(dplyr)
 library(tidyr)
 library(knitr)
 library(tibble)
+library(extrafont)
+library(fontcm)
+library(ggthemes)
+
+font_install("fontcm")
+loadfonts()
 ```
 
 ```{r theme}
@@ -25,7 +31,8 @@ theme_set(theme_minimal())
 
 theme_update(
   axis.title = element_blank(),
-  legend.position = "none"
+  legend.position = "none",
+  text = element_text(family = "mono")
 )
 ```
 
@@ -60,8 +67,8 @@ lap_times_1060 %>%
 ```{r}
 
 filter_by_year <- function(data) {
-  # data %>% filter(year > 2000)
-  data %>% filter(year > 1949)
+  data %>% filter(year > 2000)
+  # data %>% filter(year > 1949)
 }
 
 last_races <- races %>%
@@ -193,99 +200,153 @@ stats_table <- race_by_race %>%
   )
 ```
 
-```{r main, fig.width=12, fig.height=24}
+```{r main, fig.width=12, fig.height=8, out.width="100%"}
 
 min_year <- min(champion_names$year)
 max_year <- max(champion_names$year)
-champion_color <- "#cf1616"
-runnerup_color <- "#0e2461"
+champion_color <- "#f19e3e"
+runnerup_color <- "#4c72db"
+other_color <- "#acacac"
 
-offset_left <- -40
+rivals_color_scale <- scale_color_manual(
+  values = c(
+    "champion" = champion_color,
+    "runnerup" = runnerup_color,
+    "other" = other_color
+  ),
+  aesthetics = c("color", "fill")
+)
+
+offset_left <- -30
 offset_middle <- -10
-offset_right <- 30
+offset_right <- 20
 
 ggplot() +
   geom_text(
     data = champion_names,
     hjust = "left",
     mapping = aes(x = offset_left, y = year, label = paste(firstname, lastname)),
-    fontface = "bold"
+    fontface = "bold",
+    family = "mono"
     # color = champion_color
   ) +
   geom_text(
     data = runnerup_names,
     mapping = aes(x = offset_right, y = year, label = paste(firstname, lastname)),
     hjust = "left",
+    family = "mono"
     # color = runnerup_color
   ) +
   geom_text(
     data = champion_constructors,
     mapping = aes(x = offset_left, y = year + 0.4, label = name),
     hjust = "left",
-    fontface = "italic"
+    fontface = "italic",
+    family = "mono"
     # color = runnerup_color
   ) +
   geom_text(
     data = runnerup_constructors,
     mapping = aes(x = offset_right, y = year + 0.4, label = name),
     hjust = "left",
-    fontface = "italic"
+    fontface = "italic",
+    family = "mono"
     # color = runnerup_color
   ) +
   geom_point(
     data = race_by_race,
-    aes(x = round + offset_middle, y = year, fill = won_by, shape = won_by),
+    aes(x = round + offset_middle, y = year, fill = won_by, color = won_by),
+    shape = 21,
     size = 3
   ) +
-  scale_shape_manual(
-    values =
-      c("champion" = 19, "runnerup" = 13, "other" = 21)
-  ) +
-  scale_fill_manual(
-    values =
-      c("champion" = champion_color, "runnerup" = runnerup_color, "other" = "white")
-  ) +
-  scale_y_reverse(breaks = seq(min_year, max_year), expand = c(0, 0)) +
-  # scale_x_continuous(expand = c(0, 10)) +
+  rivals_color_scale +
+
+  # scale_shape_manual(
+  #   values =
+  #     c("champion" = 19, "runnerup" = 13, "other" = 21)
+  # ) +
+
   geom_point(
     data = subset(race_by_race, polesitterId == championId),
     aes(x = round + offset_middle, y = year),
     fill = NA,
     shape = 21,
     size = 5,
-    stroke = 1
+    stroke = 1,
+    color = champion_color
   ) +
   geom_label(
     data = champion_table,
-    aes(x = offset_left - 5, y = year, label = count),
-    size = 5
+    aes(x = offset_left - 2, y = year, label = count),
+    size = 5,
+    family = "mono"
   ) +
   geom_text(
     data = stats_table,
-    mapping = aes(x = offset_middle - 10, y = year, label = champion_wins),
-    hjust = "left"
+    mapping = aes(x = offset_middle - 8, y = year, label = champion_wins),
+    hjust = "left",
+    family = "mono"
+  ) +
+  geom_point(
+    data = champion_names,
+    aes(x = offset_middle - 6, y = year),
+    shape = 21,
+    size = 3,
+    fill = champion_color,
+    color = champion_color
   ) +
   geom_text(
     data = stats_table,
     mapping = aes(
-      x = offset_middle - 5, y = year,
-      label = sprintf("(%d)", champion_poles)
+      x = offset_middle - 4, y = year,
+      # label = sprintf("(%d)", champion_poles)
+      label = champion_poles
     ),
-    hjust = "left"
+    hjust = "left",
+    family = "mono"
+  ) +
+  geom_point(
+    data = champion_names,
+    aes(x = offset_middle - 2, y = year),
+    shape = 21,
+    size = 4,
+    fill = NA,
+    color = champion_color
   ) +
   geom_text(
     data = stats_table,
-    mapping = aes(x = offset_right - 15, y = year, label = runnerup_wins),
-    hjust = "left"
+    mapping = aes(x = offset_right - 7, y = year, label = runnerup_wins),
+    hjust = "left",
+    family = "mono"
+  ) +
+  geom_point(
+    data = runnerup_names,
+    aes(x = offset_right - 5, y = year),
+    shape = 21,
+    size = 3,
+    fill = runnerup_color,
+    color = runnerup_color
   ) +
   geom_text(
     data = stats_table,
     mapping = aes(
-      x = offset_right - 10, y = year,
-      label = sprintf("(%d)", runnerup_poles)
+      x = offset_right - 3, y = year,
+      # label = sprintf("(%d)", runnerup_poles)
+      label = runnerup_poles
     ),
-    hjust = "left"
-  )
+    hjust = "left",
+    family = "mono"
+  ) +
+  geom_point(
+    data = runnerup_names,
+    aes(x = offset_right - 1, y = year),
+    shape = 21,
+    size = 4,
+    fill = NA,
+    color = runnerup_color
+  ) +
+  scale_y_reverse(breaks = seq(min_year, max_year), expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(-35, 30))
 ```
 
 ```{r, eval=FALSE}
