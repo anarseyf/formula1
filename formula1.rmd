@@ -3,6 +3,8 @@ output: rmarkdown::github_document
 geometry: "left=1cm,right=1cm,top=1cm,bottom=1cm"
 ---
 
+\pagenumbering{gobble}
+
 ```{r packages, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
@@ -228,7 +230,7 @@ stats_table <- race_by_race %>%
   )
 ```
 
-```{r main, fig.width=12, fig.height=16, out.width="100%"}
+```{r main, fig.width=12, fig.height=15, out.width="100%"}
 
 champion_color <- "#ffaa49"
 runnerup_color <- "#5495f5"
@@ -390,6 +392,7 @@ ggplot() +
     axis.ticks.x = element_blank(),
     axis.text.y = element_text(size = 11),
     panel.grid = element_blank(),
+    plot.margin = unit(c(1, 0.5, 1, 0.5), "cm")
   ) +
   geom_text(
     data = headers,
@@ -460,6 +463,13 @@ The reasons are kind of wild. See for example:
 ### Pole position based on starting grid
 
 The dataset does not contain qualy times for over half of all the 1000+ races. I am using starting grid position P1 instead.
+
+## TODO
+
+* Monospace font
+* Special characters not rendered (as in "Räikkönen")
+* Legend
+* Race numbers (maybe)
 
 ## Credit
 

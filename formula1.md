@@ -35,6 +35,13 @@ The reasons are kind of wild. See for example:
 The dataset does not contain qualy times for over half of all the 1000+
 races. I am using starting grid position P1 instead.
 
+## TODO
+
+-   Monospace font
+-   Special characters not rendered (as in “Räikkönen”)
+-   Legend
+-   Race numbers (maybe)
+
 ## Credit
 
 Inspired by
