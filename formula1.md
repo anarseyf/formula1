@@ -1,7 +1,7 @@
 
 # Formula 1 World Champions
 
-![](formula1_files/figure-gfm/main-1.png)<!-- -->
+<img src="formula1_files/figure-gfm/main-1.png" width="100%" />
 
 ## Data notes
 

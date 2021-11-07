@@ -29,7 +29,8 @@ loadfonts()
 
 ```{r theme}
 
-theme_set(theme_fivethirtyeight())
+# theme_set(theme_fivethirtyeight())
+theme_set(theme_minimal())
 
 theme_update(
   axis.title = element_blank(),
@@ -69,7 +70,7 @@ qualifying <- read.csv("./data/qualifying.csv")
 lap_times_1060 <- read.csv("./data/lap_times_1060.csv")
 ```
 
-<!-- # Formula 1 World Champions -->
+# Formula 1 World Champions
 
 ```{r, eval=FALSE}
 races %>%
@@ -227,11 +228,12 @@ stats_table <- race_by_race %>%
   )
 ```
 
-```{r main, fig.width=12, fig.height=17, out.width="100%"}
+```{r main, fig.width=12, fig.height=16, out.width="100%"}
 
-champion_color <- "#f19e3e"
-runnerup_color <- "#4c72db"
-other_color <- "#acacac"
+champion_color <- "#ffaa49"
+runnerup_color <- "#5495f5"
+other_color <- "#b1b1b1"
+titles_color <- "#888888"
 
 rivals_color_scale <- scale_color_manual(
   values = c(
@@ -241,6 +243,9 @@ rivals_color_scale <- scale_color_manual(
   ),
   aesthetics = c("color", "fill")
 )
+
+alt_row_colors <- scale_fill_manual(values = c("white", "#dadada"))
+line_color <- "#525252"
 
 verticals <- c(-36, -32, -21, -13, -9, 13, 17, 28, 36)
 column_labels <- c("Titles\nwon", "Champion", "Team", "Wins\n(Poles)", "Races", "Wins\n(Poles)", "Runner-up", "Team", "") # %>% toupper()
@@ -261,20 +266,32 @@ ggplot() +
     # stat = "identity",
     alpha = 0.6,
   ) +
-  scale_fill_manual(values = c("white", "#e9e9e9")) +
+  alt_row_colors +
   new_scale_fill() +
+
+  # Horizontal lines
+  geom_hline(yintercept = seq(min_year, max_year), color = "#5f5f5f", size = 0.5, linetype = "dotted") +
+  geom_hline(yintercept = c(min_year - 0.5, max_year + 0.5), color = line_color, size = 0.3, linetype = "solid") +
   # Titles
   geom_label(
     data = titles_table,
-    aes(x = verticals[1] + 2, y = year, label = count),
-    size = 5,
-    family = "sans"
+    aes(x = verticals[1] + 1.5, y = year, label = count),
+    size = 4,
+    fill = titles_color,
+    color = "white",
+    label.r = unit(0.25, "lines"),
+    family = "sans",
+    fontface = "bold"
   ) +
   # Champion
   geom_text(
     data = champion_names,
     hjust = "left",
-    mapping = aes(x = verticals[2], y = year, label = paste(firstname, lastname)),
+    aes(
+      x = verticals[2],
+      y = year,
+      label = paste(firstname, lastname),
+    ),
     fontface = "bold",
     family = "sans"
   ) +
@@ -371,7 +388,8 @@ ggplot() +
   ) +
   theme(
     axis.ticks.x = element_blank(),
-    panel.grid = element_blank()
+    axis.text.y = element_text(size = 11),
+    panel.grid = element_blank(),
   ) +
   geom_text(
     data = headers,
@@ -383,8 +401,8 @@ ggplot() +
     hjust = "left",
     vjust = "top"
   ) +
-  geom_vline(xintercept = verticals - 0.5, color = "#6e6e6e", size = 0.25) +
-  geom_hline(yintercept = seq(min_year, max_year), color = "#6e6e6e", size = 0.25, linetype = "dotted")
+  geom_vline(xintercept = verticals - 0.5, color = line_color, size = 0.3)
+
 
 # geom_point(
 #   data = champion_names,

@@ -1,6 +1,10 @@
 # Formula 1
 
-Visualizations of Formula 1 races, 1950-2021.
+Visualizations of Formula 1 data.
+
+## Formula 1 World Champions 1950–2020
+
+![](formula1_files/figure-gfm/main-1.png)
 
 ## Output
 
