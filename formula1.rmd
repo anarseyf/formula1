@@ -88,8 +88,8 @@ lap_times_1060 %>%
 ```{r}
 
 filter_by_year <- function(data) {
-  data %>% filter(year > 2000)
-  # data %>% filter(year > 1949)
+  # data %>% filter(year > 2000)
+  data %>% filter(year > 1949)
 }
 
 last_races <- races %>%
@@ -227,7 +227,7 @@ stats_table <- race_by_race %>%
   )
 ```
 
-```{r main, fig.width=12, fig.height=8, out.width="100%"}
+```{r main, fig.width=12, fig.height=17, out.width="100%"}
 
 champion_color <- "#f19e3e"
 runnerup_color <- "#4c72db"
@@ -252,8 +252,8 @@ ggplot() +
   geom_rect(
     data = alt_rows,
     aes(
-      xmin = min(verticals),
-      xmax = max(verticals),
+      xmin = min(verticals) - 0.5,
+      xmax = max(verticals) - 0.5,
       ymin = year - 0.5,
       ymax = year + run - 0.5,
       fill = is_alt
@@ -261,7 +261,7 @@ ggplot() +
     # stat = "identity",
     alpha = 0.6,
   ) +
-  scale_fill_manual(values = c("white", "grey")) +
+  scale_fill_manual(values = c("white", "#e9e9e9")) +
   new_scale_fill() +
   # Titles
   geom_label(
@@ -307,7 +307,7 @@ ggplot() +
   # Wins (race by race)
   geom_point(
     data = race_by_race,
-    aes(x = round + verticals[5], y = year, fill = won_by, color = won_by),
+    aes(x = round + verticals[5] - 0.5, y = year, fill = won_by, color = won_by),
     shape = 21,
     size = 3
   ) +
@@ -316,7 +316,7 @@ ggplot() +
   # Pole positions (race by race)
   geom_point(
     data = subset(race_by_race, polesitterId == championId),
-    aes(x = round + verticals[5], y = year),
+    aes(x = round + verticals[5] - 0.5, y = year),
     fill = NA,
     shape = 21,
     size = 5,
@@ -357,28 +357,34 @@ ggplot() +
     family = "sans"
   ) +
   # ----- end -----
-  scale_y_reverse(breaks = seq(min_year, max_year), expand = c(0, 2), sec.axis = dup_axis()) +
+
+  scale_y_reverse(
+    breaks = seq(min_year, max_year),
+    # breaks = NULL,
+    expand = c(0, 0),
+    sec.axis = dup_axis()
+  ) +
   scale_x_continuous(
     expand = c(0, 0),
     limits = c(min(verticals) - 1, max(verticals)),
-    breaks = verticals - 0.5,
+    breaks = NULL
   ) +
   theme(
     axis.ticks.x = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.grid.major.x = element_line(size = 0.25, linetype = "solid", color = "#696969"),
-    panel.grid.major.y = element_line(size = 0.5, linetype = "dotted", color = "#696969"),
+    panel.grid = element_blank()
   ) +
   geom_text(
     data = headers,
-    aes(x = verticals, y = min_year - 3, label = column_labels),
+    aes(x = verticals, y = min_year - 2, label = column_labels),
     fontface = "bold",
     # family = "sans",
     size = 5,
     lineheight = 0.7,
     hjust = "left",
     vjust = "top"
-  )
+  ) +
+  geom_vline(xintercept = verticals - 0.5, color = "#6e6e6e", size = 0.25) +
+  geom_hline(yintercept = seq(min_year, max_year), color = "#6e6e6e", size = 0.25, linetype = "dotted")
 
 # geom_point(
 #   data = champion_names,
