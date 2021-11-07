@@ -4,13 +4,14 @@ Visualizations of Formula 1 data.
 
 ## Formula 1 World Champions 1950–2020
 
-![](formula1_files/figure-gfm/main-1.png)
+![](./champions.png)
 
-## Output
+## Source code
 
-- [formula1.md](./formula1.md)
+- [formula1.R](./formula1.R)
+- [Notes](./formula1.rmd) (Markdown)
 
-## Source dataset
+## Dataset
 
 - https://www.kaggle.com/rohanrao/formula-1-world-championship-1950-2020
 
