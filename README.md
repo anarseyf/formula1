@@ -20,3 +20,4 @@ Visualizations of Formula 1 data.
 - R programming language
 - VSCode
 - Font: [JetBrains Mono](https://www.jetbrains.com/lp/mono/) (amazing!)
+- Inspired by [@gkaramanis/tidytuesday](https://github.com/gkaramanis/tidytuesday/tree/master/2020/2020-week15).
