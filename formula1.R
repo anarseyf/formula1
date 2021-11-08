@@ -54,16 +54,6 @@ lap_times_1060 <- read.csv("./data/lap_times_1060.csv")
 
 # Formula 1 World Champions
 
-races %>%
-  ggplot(aes(x = date, y = round)) +
-  geom_point()
-
-lap_times_1060 %>%
-  mutate(driverId = factor(driverId)) %>%
-  ggplot(aes(x = lap, y = position, group = driverId, color = driverId)) +
-  geom_point(aes(color = driverId)) +
-  geom_step(aes(color = driverId))
-
 filter_by_year <- function(data) {
   # data %>% filter(year > 2000)
   data %>% filter(year > 1949)
@@ -203,179 +193,183 @@ stats_table <- race_by_race %>%
     runnerup_poles = sum(polesitterId == runnerupId)
   )
 
-champion_color <- "#ffaa49"
-runnerup_color <- "#5495f5"
-other_color <- "#b1b1b1"
-titles_color <- "#888888"
+plot_champions <- function() {
+  champion_color <- "#ffaa49"
+  runnerup_color <- "#5495f5"
+  other_color <- "#b1b1b1"
+  titles_color <- "#888888"
 
-rivals_color_scale <- scale_color_manual(
-  values = c(
-    "champion" = champion_color,
-    "runnerup" = runnerup_color,
-    "other" = other_color
-  ),
-  aesthetics = c("color", "fill")
-)
-
-alt_row_colors <- scale_fill_manual(values = c("white", "#dadada"))
-line_color <- "#525252"
-
-verticals <- c(-36, -32, -21, -13, -9, 13, 17, 28, 36)
-column_labels <- c("Titles\nwon", "Champion", "Team", "Wins\n(Poles)", "Races", "Wins\n(Poles)", "Runner-up", "Team", "") # %>% toupper()
-
-headers <- data.frame(column_labels, verticals)
-
-ggplot() +
-  # Alternating rows
-  geom_rect(
-    data = alt_rows,
-    aes(
-      xmin = min(verticals) - 0.5,
-      xmax = max(verticals) - 0.5,
-      ymin = year - 0.5,
-      ymax = year + run - 0.5,
-      fill = is_alt
+  rivals_color_scale <- scale_color_manual(
+    values = c(
+      "champion" = champion_color,
+      "runnerup" = runnerup_color,
+      "other" = other_color
     ),
-    # stat = "identity",
-    alpha = 0.6,
-  ) +
-  alt_row_colors +
-  new_scale_fill() +
+    aesthetics = c("color", "fill")
+  )
 
-  # Horizontal lines
-  geom_hline(yintercept = seq(min_year, max_year), color = "#5f5f5f", size = 0.5, linetype = "dotted") +
-  geom_hline(yintercept = c(min_year - 0.5, max_year + 0.5), color = line_color, size = 0.3, linetype = "solid") +
-  # Titles
-  geom_label(
-    data = titles_table,
-    aes(x = verticals[1] + 1.5, y = year, label = count),
-    size = 4,
-    fill = titles_color,
-    color = "white",
-    label.r = unit(0.25, "lines"),
-    family = "sans",
-    fontface = "bold"
-  ) +
-  # Champion
-  geom_text(
-    data = champion_names,
-    hjust = "left",
-    aes(
-      x = verticals[2],
-      y = year,
-      label = paste(firstname, lastname),
-    ),
-    fontface = "bold",
-    family = "sans"
-  ) +
-  # Team
-  geom_text(
-    data = champion_constructors,
-    mapping = aes(x = verticals[3], y = year, label = name),
-    hjust = "left",
-    # fontface = "italic",
-    family = "sans"
-  ) +
-  # Wins (Poles)
-  geom_text(
-    data = stats_table,
-    mapping = aes(x = verticals[4], y = year, label = champion_wins),
-    hjust = "left",
-    family = "sans",
-    fontface = "bold"
-  ) +
-  geom_text(
-    data = stats_table,
-    mapping = aes(
-      x = verticals[4] + 1.5, y = year,
-      label = sprintf("(%d)", champion_poles)
-      # label = champion_poles
-    ),
-    hjust = "left",
-    family = "sans"
-  ) +
-  # Wins (race by race)
-  geom_point(
-    data = race_by_race,
-    aes(x = round + verticals[5] - 0.5, y = year, fill = won_by, color = won_by),
-    shape = 21,
-    size = 3
-  ) +
-  rivals_color_scale +
+  alt_row_colors <- scale_fill_manual(values = c("white", "#dadada"))
+  line_color <- "#525252"
 
-  # Pole positions (race by race)
-  geom_point(
-    data = subset(race_by_race, polesitterId == championId),
-    aes(x = round + verticals[5] - 0.5, y = year),
-    fill = NA,
-    shape = 21,
-    size = 5,
-    stroke = 1,
-    color = champion_color
-  ) +
-  # Wins (Poles)
-  geom_text(
-    data = stats_table,
-    mapping = aes(x = verticals[6], y = year, label = runnerup_wins),
-    hjust = "left",
-    family = "sans",
-    fontface = "bold"
-  ) +
-  geom_text(
-    data = stats_table,
-    mapping = aes(
-      x = verticals[6] + 1.5, y = year,
-      label = sprintf("(%d)", runnerup_poles)
-      # label = runnerup_poles
-    ),
-    hjust = "left",
-    family = "sans"
-  ) +
-  # Runner-up
-  geom_text(
-    data = runnerup_names,
-    mapping = aes(x = verticals[7], y = year, label = paste(firstname, lastname)),
-    hjust = "left",
-    family = "sans"
-  ) +
-  # Team
-  geom_text(
-    data = runnerup_constructors,
-    mapping = aes(x = verticals[8], y = year, label = name),
-    hjust = "left",
-    # fontface = "italic",
-    family = "sans"
-  ) +
-  # ----- end -----
+  verticals <- c(-36, -32, -21, -13, -9, 13, 17, 28, 36)
+  column_labels <- c("Titles\nwon", "Champion", "Team", "Wins\n(Poles)", "Races", "Wins\n(Poles)", "Runner-up", "Team", "") # %>% toupper()
 
-  scale_y_reverse(
-    breaks = seq(min_year, max_year),
-    # breaks = NULL,
-    expand = c(0, 0),
-    sec.axis = dup_axis()
-  ) +
-  scale_x_continuous(
-    expand = c(0, 0),
-    limits = c(min(verticals) - 1, max(verticals)),
-    breaks = NULL
-  ) +
-  theme(
-    axis.ticks.x = element_blank(),
-    axis.text.y = element_text(size = 11),
-    panel.grid = element_blank(),
-    plot.margin = unit(c(1, 0.5, 1, 0.5), "cm")
-  ) +
-  geom_text(
-    data = headers,
-    aes(x = verticals, y = min_year - 2, label = column_labels),
-    fontface = "bold",
-    # family = "sans",
-    size = 5,
-    lineheight = 0.7,
-    hjust = "left",
-    vjust = "top"
-  ) +
-  geom_vline(xintercept = verticals - 0.5, color = line_color, size = 0.3)
-# annotate("text", x = 0, y = min_year - 4, label = "Formula 1 World Champions, 1950–2020", hjust = "left")
+  headers <- data.frame(column_labels, verticals)
+
+  ggplot() +
+    # Alternating rows
+    geom_rect(
+      data = alt_rows,
+      aes(
+        xmin = min(verticals) - 0.5,
+        xmax = max(verticals) - 0.5,
+        ymin = year - 0.5,
+        ymax = year + run - 0.5,
+        fill = is_alt
+      ),
+      # stat = "identity",
+      alpha = 0.6,
+    ) +
+    alt_row_colors +
+    new_scale_fill() +
+
+    # Horizontal lines
+    # geom_hline(yintercept = seq(min_year, max_year), color = "#5f5f5f", size = 0.5, linetype = "dotted") +
+    geom_hline(yintercept = c(min_year - 0.5, max_year + 0.5), color = line_color, size = 0.3, linetype = "solid") +
+    # Titles
+    geom_label(
+      data = titles_table,
+      aes(x = verticals[1] + 1.5, y = year, label = count),
+      size = 4,
+      fill = titles_color,
+      color = "white",
+      label.r = unit(0.25, "lines"),
+      family = "sans",
+      fontface = "bold"
+    ) +
+    # Champion
+    geom_text(
+      data = champion_names,
+      hjust = "left",
+      aes(
+        x = verticals[2],
+        y = year,
+        label = paste(firstname, lastname),
+      ),
+      fontface = "bold",
+      family = "sans"
+    ) +
+    # Team
+    geom_text(
+      data = champion_constructors,
+      mapping = aes(x = verticals[3], y = year, label = name),
+      hjust = "left",
+      # fontface = "italic",
+      family = "sans"
+    ) +
+    # Wins (Poles)
+    geom_text(
+      data = stats_table,
+      mapping = aes(x = verticals[4], y = year, label = champion_wins),
+      hjust = "left",
+      family = "sans",
+      fontface = "bold"
+    ) +
+    geom_text(
+      data = stats_table,
+      mapping = aes(
+        x = verticals[4] + 1.5, y = year,
+        label = sprintf("(%d)", champion_poles)
+        # label = champion_poles
+      ),
+      hjust = "left",
+      family = "sans"
+    ) +
+    # Wins (race by race)
+    geom_point(
+      data = race_by_race,
+      aes(x = round + verticals[5] - 0.5, y = year, fill = won_by, color = won_by),
+      shape = 21,
+      size = 3
+    ) +
+    rivals_color_scale +
+
+    # Pole positions (race by race)
+    geom_point(
+      data = subset(race_by_race, polesitterId == championId),
+      aes(x = round + verticals[5] - 0.5, y = year),
+      fill = NA,
+      shape = 21,
+      size = 5,
+      stroke = 1,
+      color = champion_color
+    ) +
+    # Wins (Poles)
+    geom_text(
+      data = stats_table,
+      mapping = aes(x = verticals[6], y = year, label = runnerup_wins),
+      hjust = "left",
+      family = "sans",
+      fontface = "bold"
+    ) +
+    geom_text(
+      data = stats_table,
+      mapping = aes(
+        x = verticals[6] + 1.5, y = year,
+        label = sprintf("(%d)", runnerup_poles)
+        # label = runnerup_poles
+      ),
+      hjust = "left",
+      family = "sans"
+    ) +
+    # Runner-up
+    geom_text(
+      data = runnerup_names,
+      mapping = aes(x = verticals[7], y = year, label = paste(firstname, lastname)),
+      hjust = "left",
+      family = "sans"
+    ) +
+    # Team
+    geom_text(
+      data = runnerup_constructors,
+      mapping = aes(x = verticals[8], y = year, label = name),
+      hjust = "left",
+      # fontface = "italic",
+      family = "sans"
+    ) +
+    # ----- end -----
+
+    scale_y_reverse(
+      breaks = seq(min_year, max_year),
+      # breaks = NULL,
+      expand = c(0, 0),
+      sec.axis = dup_axis()
+    ) +
+    scale_x_continuous(
+      expand = c(0, 0),
+      limits = c(min(verticals) - 1, max(verticals)),
+      breaks = NULL
+    ) +
+    theme(
+      axis.ticks.x = element_blank(),
+      axis.text.y = element_text(size = 11),
+      panel.grid = element_blank(),
+      plot.margin = unit(c(1, 0.5, 1, 0.5), "cm")
+    ) +
+    geom_text(
+      data = headers,
+      aes(x = verticals, y = min_year - 2, label = column_labels),
+      fontface = "bold",
+      # family = "sans",
+      size = 5,
+      lineheight = 0.7,
+      hjust = "left",
+      vjust = "top"
+    ) +
+    geom_vline(xintercept = verticals - 0.5, color = line_color, size = 0.3)
+  # annotate("text", x = 0, y = min_year - 4, label = "Formula 1 World Champions, 1950–2020", hjust = "left")
+}
+
+plot_champions()
 
 ggsave("champions.png", bg = "white", width = 12, height = 15)
