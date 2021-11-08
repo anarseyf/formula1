@@ -15,7 +15,8 @@ Visualizations of Formula 1 data.
 
 - https://www.kaggle.com/rohanrao/formula-1-world-championship-1950-2020
 
-## Tools
+## Tools & Resources
 
 - R programming language
 - VSCode
+- Font: [JetBrains Mono](https://www.jetbrains.com/lp/mono/) (amazing!)

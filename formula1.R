@@ -24,8 +24,8 @@ theme_set(theme_minimal())
 theme_update(
   axis.title = element_blank(),
   axis.ticks.x = element_blank(),
+  axis.text = element_text(family = "JetBrains Mono"),
   legend.position = "none",
-  text = element_text(family = "sans")
 )
 
 get_alt_rows <- function(v, start_year) {
@@ -244,7 +244,7 @@ plot_champions <- function() {
       fill = titles_color,
       color = "white",
       label.r = unit(0.25, "lines"),
-      family = "sans",
+      family = "JetBrains Mono",
       fontface = "bold"
     ) +
     # Champion
@@ -257,7 +257,7 @@ plot_champions <- function() {
         label = paste(firstname, lastname),
       ),
       fontface = "bold",
-      family = "sans"
+      family = "JetBrains Mono"
     ) +
     # Team
     geom_text(
@@ -265,14 +265,14 @@ plot_champions <- function() {
       mapping = aes(x = verticals[3], y = year, label = name),
       hjust = "left",
       # fontface = "italic",
-      family = "sans"
+      family = "JetBrains Mono"
     ) +
     # Wins (Poles)
     geom_text(
       data = stats_table,
       mapping = aes(x = verticals[4], y = year, label = champion_wins),
       hjust = "left",
-      family = "sans",
+      family = "JetBrains Mono",
       fontface = "bold"
     ) +
     geom_text(
@@ -283,7 +283,7 @@ plot_champions <- function() {
         # label = champion_poles
       ),
       hjust = "left",
-      family = "sans"
+      family = "JetBrains Mono"
     ) +
     # Wins (race by race)
     geom_point(
@@ -309,7 +309,7 @@ plot_champions <- function() {
       data = stats_table,
       mapping = aes(x = verticals[6], y = year, label = runnerup_wins),
       hjust = "left",
-      family = "sans",
+      family = "JetBrains Mono",
       fontface = "bold"
     ) +
     geom_text(
@@ -320,14 +320,14 @@ plot_champions <- function() {
         # label = runnerup_poles
       ),
       hjust = "left",
-      family = "sans"
+      family = "JetBrains Mono"
     ) +
     # Runner-up
     geom_text(
       data = runnerup_names,
       mapping = aes(x = verticals[7], y = year, label = paste(firstname, lastname)),
       hjust = "left",
-      family = "sans"
+      family = "JetBrains Mono"
     ) +
     # Team
     geom_text(
@@ -335,7 +335,7 @@ plot_champions <- function() {
       mapping = aes(x = verticals[8], y = year, label = name),
       hjust = "left",
       # fontface = "italic",
-      family = "sans"
+      family = "JetBrains Mono"
     ) +
     # ----- end -----
 
@@ -358,9 +358,9 @@ plot_champions <- function() {
     ) +
     geom_text(
       data = headers,
-      aes(x = verticals, y = min_year - 2, label = column_labels),
+      aes(x = verticals, y = min_year - 2.5, label = column_labels),
       fontface = "bold",
-      # family = "sans",
+      family = "JetBrains Mono",
       size = 5,
       lineheight = 0.7,
       hjust = "left",
@@ -372,4 +372,4 @@ plot_champions <- function() {
 
 plot_champions()
 
-ggsave("champions.png", bg = "white", width = 12, height = 15)
+ggsave("champions.png", bg = "white", width = 14, height = 16)
