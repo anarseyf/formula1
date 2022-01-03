@@ -1,14 +1,19 @@
 ---
-# output: rmarkdown::github_document
-output: pdf_document
+output: rmarkdown::github_document
+# output: pdf_document
 geometry: "left=1cm,right=1cm,top=1cm,bottom=1cm"
 ---
 
 \pagenumbering{gobble}
 
-# Formula 1 World Champions
+# Formula 1 World Champions 1950-2021
 
 ![](./champions.png)
+
+## Top 10 Champions
+
+Work in progress.
+<!-- ![](./top10.png) -->
 
 ([Source code](./formula1.R).)
 

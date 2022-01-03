@@ -1,0 +1,8 @@
+install.packages("GGally", repos = "http://cran.us.r-project.org")
+install.packages("ggpairs", repos = "http://cran.us.r-project.org")
+library(datasets)
+library(ggpairs)
+data(iris)
+View(iris)
+library(GGally)
+ggpairs(iris, aes(colour = Species))

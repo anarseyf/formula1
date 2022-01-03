@@ -2,7 +2,7 @@
 
 Visualizations of Formula 1 data.
 
-## Formula 1 World Champions 1950–2020
+## Formula 1 World Champions 1950–2021
 
 ![](./champions.png)
 

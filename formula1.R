@@ -43,14 +43,13 @@ get_alt_rows <- function(v, start_year) {
   return(alt_rows %>% select(year, run, is_alt))
 }
 
-races <- read.csv("./data/races.csv") %>% mutate(date = as.Date(date))
-standings <- read.csv("./data/driver_standings.csv")
-drivers <- read.csv("./data/drivers.csv")
-constructors <- read.csv("./data/constructors.csv")
 circuits <- read.csv("./data/circuits.csv")
-results <- read.csv("./data/results.csv")
+constructors <- read.csv("./data/constructors.csv")
+drivers <- read.csv("./data/drivers.csv")
 qualifying <- read.csv("./data/qualifying.csv")
-lap_times_1060 <- read.csv("./data/lap_times_1060.csv")
+races <- read.csv("./data/races.csv") %>% mutate(date = as.Date(date))
+results <- read.csv("./data/results.csv")
+standings <- read.csv("./data/driver_standings.csv")
 
 # Formula 1 World Champions
 
@@ -60,7 +59,7 @@ filter_by_year <- function(data) {
 }
 
 last_races <- races %>%
-  filter(year < 2021) %>% # 2021 season is incomplete as of today
+  # filter(year < 2022) %>%
   group_by(year) %>%
   mutate(last_race = max(round)) %>%
   filter(round == last_race) %>%
@@ -211,7 +210,9 @@ plot_champions <- function() {
   alt_row_colors <- scale_fill_manual(values = c("white", "#dadada"))
   line_color <- "#525252"
 
-  verticals <- c(-36, -32, -21, -13, -9, 13, 17, 28, 36)
+  # verticals <- c(-36, -32, -21, -13, -9, 13, 17, 28, 36)
+# verticals = c(0, 4, 15, 23, 27, 49, 53, 64, 72)
+  verticals = c(0, 4, 15, 23, 27, 50, 54, 65, 73)
   column_labels <- c("Titles\nwon", "Champion", "Team", "Wins\n(Poles)", "Races", "Wins\n(Poles)", "Runner-up", "Team", "") # %>% toupper()
 
   headers <- data.frame(column_labels, verticals)
@@ -370,6 +371,12 @@ plot_champions <- function() {
   # annotate("text", x = 0, y = min_year - 4, label = "Formula 1 World Champions, 1950–2020", hjust = "left")
 }
 
+plot_top10 <- function() {
+  ggplot()
+}
 plot_champions()
+
+# plot_top10()
+# ggsave("top10.png", bg = "#cacaca", width = 8, height = 12)
 
 ggsave("champions.png", bg = "white", width = 14, height = 16)
