@@ -210,10 +210,8 @@ plot_champions <- function() {
   alt_row_colors <- scale_fill_manual(values = c("white", "#dadada"))
   line_color <- "#525252"
 
-  # verticals <- c(-36, -32, -21, -13, -9, 13, 17, 28, 36)
-# verticals = c(0, 4, 15, 23, 27, 49, 53, 64, 72)
   verticals = c(0, 4, 15, 23, 27, 50, 54, 65, 73)
-  column_labels <- c("Titles\nwon", "Champion", "Team", "Wins\n(Poles)", "Races", "Wins\n(Poles)", "Runner-up", "Team", "") # %>% toupper()
+  column_labels <- c("Titles", "Champion", "Team", "Wins\n(Poles)", "Races", "Wins\n(Poles)", "Runner-up", "Team", "") # %>% toupper()
 
   headers <- data.frame(column_labels, verticals)
 
@@ -362,7 +360,7 @@ plot_champions <- function() {
       aes(x = verticals, y = min_year - 2.5, label = column_labels),
       fontface = "bold",
       family = "JetBrains Mono",
-      size = 5,
+      size = 4,
       lineheight = 0.7,
       hjust = "left",
       vjust = "top"
